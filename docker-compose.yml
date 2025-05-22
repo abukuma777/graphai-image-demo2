@@ -1,0 +1,35 @@
+# docker-compose.yml - GraphAIデモ環境
+version: '3.8'
+
+services:
+  graphai-demo:
+    build: .
+    container_name: graphai-parallel-demo
+    ports:
+      - "3000:3000"
+    volumes:
+      # ローカルの画像をコンテナにマウント
+      - ./images:/app/images:ro
+      # 出力結果をローカルに保存
+      - ./output:/app/output
+      # ログをローカルに保存
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Tokyo
+    command: node run-demo-showcase.js
+    
+  # Webサーバー用（オプション）
+  web-server:
+    build: .
+    container_name: graphai-web
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./images:/app/images:ro
+      - ./output:/app/output:ro
+    environment:
+      - TZ=Asia/Tokyo
+    command: node start-web-server.js
+    depends_on:
+      - graphai-demo

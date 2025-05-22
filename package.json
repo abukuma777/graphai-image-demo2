@@ -1,19 +1,25 @@
 {
   "name": "graphai-image-demo",
-  "version": "1.0.0",
-  "description": "GraphAI画像処理パイプライン並列実行デモ",
-  "main": "run-demo.js",
+  "version": "1.0.0", 
+  "description": "GraphAI画像処理パイプライン並列実行デモ（Docker対応）",
+  "main": "run-demo-showcase.js",
   "scripts": {
-    "start": "node run-demo.js",
-    "setup": "npm install && mkdir -p images output",
-    "demo": "node run-demo.js",
-    "clean": "rm -rf output/* && rm -rf node_modules"
+    "start": "node run-demo-showcase.js",
+    "demo": "node run-demo-showcase.js",
+    "web": "node start-web-server.js",
+    "docker:build": "docker-compose build",
+    "docker:run": "docker-compose up graphai-demo",
+    "docker:web": "docker-compose up web-server",
+    "docker:full": "docker-compose up",
+    "setup": "npm install && mkdir -p images output logs",
+    "clean": "rm -rf output/* logs/*"
   },
   "keywords": [
     "graphai",
-    "image-processing",
+    "image-processing", 
     "parallel",
-    "demo"
+    "demo",
+    "docker"
   ],
   "author": "GraphAI Demo",
   "license": "MIT",

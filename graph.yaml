@@ -1,16 +1,16 @@
-# GraphAI 画像処理パイプライン設定（修正版）
+# 現在の graph.yaml の内容を以下に変更
 version: 0.5.0
 
 nodes:
   # === 入力画像ノード ===
   image1:
-    value: "./images/image1.jpg"  # .png → .jpg に修正
+    value: "./images/image1.jpg"  # .png → .jpg に変更
     
   image2:
-    value: "./images/image2.jpg"  # .png → .jpg に修正
+    value: "./images/image2.jpg"  # .png → .jpg に変更
     
   image3:
-    value: "./images/image3.jpg"  # .png → .jpg に修正
+    value: "./images/image3.jpg"  # .png → .jpg に変更
 
   # === パイプライン1: image1の処理 ===
   mosaic1:

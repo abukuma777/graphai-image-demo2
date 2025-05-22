@@ -1,186 +1,193 @@
-[2025-05-22T02:27:46.207Z] 🚀 Context版デモスクリプト開始 (ログ出力版)
-[2025-05-22T02:27:46.213Z] 📝 ログファイル: D:\Development\graphai-image-demo2\logs\graphai-demo.log
-[2025-05-22T02:27:46.223Z] 🕒 実行開始時刻: 2025/5/22 11:27:46
-[2025-05-22T02:27:46.224Z] ============================================================
-[2025-05-22T02:27:46.264Z] 📍 メイン関数実行中...
-[2025-05-22T02:27:46.265Z] 🚀 GraphAI 画像処理デモ開始! (Context版)
-[2025-05-22T02:27:46.265Z] ==================================================
-[2025-05-22T02:27:46.265Z] 📁 画像ファイル存在確認:
-[2025-05-22T02:27:46.265Z]    ./images/image1.png: ❌ 見つからない
-[2025-05-22T02:27:46.266Z] ⚠️  警告: ./images/image1.png が見つかりません！
-[2025-05-22T02:27:46.269Z]    ./images/image2.png: ❌ 見つからない
-[2025-05-22T02:27:46.269Z] ⚠️  警告: ./images/image2.png が見つかりません！
-[2025-05-22T02:27:46.269Z]    ./images/image3.png: ❌ 見つからない
-[2025-05-22T02:27:46.269Z] ⚠️  警告: ./images/image3.png が見つかりません！
-[2025-05-22T02:27:46.270Z] 📍 Context版スクリプト読み込み完了
-[2025-05-22T02:27:46.270Z] 📁 ディレクトリ作成: ./images
-[2025-05-22T02:27:46.270Z] 📁 ディレクトリ作成: ./output
-[2025-05-22T02:27:46.273Z] 📊 YAML設定確認:
-[2025-05-22T02:27:46.273Z]    image1 value: ./images/image1.jpg
-[2025-05-22T02:27:46.273Z]    image2 value: ./images/image2.jpg
-[2025-05-22T02:27:46.273Z]    image3 value: ./images/image3.jpg
-[2025-05-22T02:27:46.274Z] 🔧 Context版エージェント登録状況:
-[2025-05-22T02:27:46.274Z] - カスタムエージェント: imageProcessingAgent (Context版)
-[2025-05-22T02:27:46.274Z] - エージェント構造: object
-[2025-05-22T02:27:46.274Z] 📊 Graph構造:
-[2025-05-22T02:27:46.274Z] - ノード数: 13
-[2025-05-22T02:27:46.274Z] - 並列パイプライン: 3つ
-[2025-05-22T02:27:46.274Z] - 処理ステップ: Input → Mosaic → Rotate → Resize → Summary
-[2025-05-22T02:27:46.274Z] 
-[2025-05-22T02:27:46.275Z] ⏰ 処理開始: 11:27:46
-[2025-05-22T02:27:46.275Z] 
-[2025-05-22T02:27:46.275Z] 🔧 GraphAI Context版インスタンス作成中...
-[2025-05-22T02:27:46.276Z] 🚀 GraphAI Context版実行開始...
-[2025-05-22T02:27:46.276Z] ==================================================
-[2025-05-22T02:27:46.277Z] LOG: 🔍 Context呼び出し: namedInputs= {
-  "source": "image1"
+[2025-05-22T11:45:33.254+09:00] 🚀 Context版デモスクリプト開始 (日本時間+Windows修正版)
+[2025-05-22T11:45:33.258+09:00] 📝 ログファイル: D:\Development\graphai-image-demo2\logs\graphai-demo.log
+[2025-05-22T11:45:33.259+09:00] 🕒 実行開始時刻: 2025/05/22 20:45:33
+[2025-05-22T11:45:33.259+09:00] ============================================================
+[2025-05-22T11:45:33.298+09:00] 📍 メイン関数実行中...
+[2025-05-22T11:45:33.299+09:00] 🚀 GraphAI 画像処理デモ開始! (Windows対応版)
+[2025-05-22T11:45:33.299+09:00] ==================================================
+[2025-05-22T11:45:33.300+09:00] 📁 画像ファイル存在確認:
+[2025-05-22T11:45:33.300+09:00]    ./images/image1.jpg: ✅ 存在
+[2025-05-22T11:45:33.302+09:00]    ./images/image2.jpg: ✅ 存在
+[2025-05-22T11:45:33.302+09:00]    ./images/image3.jpg: ✅ 存在
+[2025-05-22T11:45:33.303+09:00] 📍 Windows対応版スクリプト読み込み完了
+[2025-05-22T11:45:33.303+09:00] 📁 ディレクトリ確認: ./images (読み書き可能)
+[2025-05-22T11:45:33.304+09:00] 📁 ディレクトリ確認: ./output (読み書き可能)
+[2025-05-22T11:45:33.307+09:00] 📊 YAML設定確認:
+[2025-05-22T11:45:33.307+09:00]    image1 value: ./images/image1.jpg
+[2025-05-22T11:45:33.308+09:00]    image2 value: ./images/image2.jpg
+[2025-05-22T11:45:33.308+09:00]    image3 value: ./images/image3.jpg
+[2025-05-22T11:45:33.308+09:00] 🔧 Windows対応エージェント登録状況:
+[2025-05-22T11:45:33.309+09:00] - カスタムエージェント: imageProcessingAgent (Windows安全版)
+[2025-05-22T11:45:33.309+09:00] - 並列処理安全対策: 有効
+[2025-05-22T11:45:33.309+09:00] 📊 Graph構造:
+[2025-05-22T11:45:33.310+09:00] - ノード数: 13
+[2025-05-22T11:45:33.310+09:00] - 並列パイプライン: 3つ
+[2025-05-22T11:45:33.310+09:00] - 処理ステップ: Input → Mosaic → Rotate → Resize → Summary
+[2025-05-22T11:45:33.311+09:00] 
+[2025-05-22T11:45:33.311+09:00] ⏰ 処理開始: 20:45:33
+[2025-05-22T11:45:33.311+09:00] 
+[2025-05-22T11:45:33.312+09:00] 🔧 GraphAI Windows対応版インスタンス作成中...
+[2025-05-22T11:45:33.314+09:00] 🚀 GraphAI Windows対応版実行開始...
+[2025-05-22T11:45:33.314+09:00] ==================================================
+[2025-05-22T11:45:33.339+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
+  "source": "mosaic3"
 }
-[2025-05-22T02:27:46.278Z] LOG: 🔍 params= {
-  "operation": "mosaic",
-  "blockSize": 10,
-  "outputPath": "./output/image1_mosaic.jpg"
+[2025-05-22T11:45:33.340+09:00] LOG: 🔍 params= {
+  "operation": "rotate",
+  "angle": 270,
+  "outputPath": "./output/image3_rotated.jpg"
 }
-[2025-05-22T02:27:46.278Z] LOG: 🎬 処理開始: mosaic - 11:27:46
-[2025-05-22T02:27:46.278Z] LOG: 🔍 sourceValue: image1, type: string
-[2025-05-22T02:27:46.279Z] LOG: 🔍 Context呼び出し: namedInputs= {
+[2025-05-22T11:45:33.341+09:00] LOG: 🎬 処理開始: rotate - 11:45:33
+[2025-05-22T11:45:33.342+09:00] LOG: 🔍 sourceValue: mosaic3, type: string
+[2025-05-22T11:45:33.343+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
   "source": "mosaic1"
 }
-[2025-05-22T02:27:46.279Z] LOG: 🔍 params= {
+[2025-05-22T11:45:33.343+09:00] LOG: 🔍 params= {
   "operation": "rotate",
   "angle": 90,
   "outputPath": "./output/image1_rotated.jpg"
 }
-[2025-05-22T02:27:46.280Z] LOG: 🎬 処理開始: rotate - 11:27:46
-[2025-05-22T02:27:46.280Z] LOG: 🔍 sourceValue: mosaic1, type: string
-[2025-05-22T02:27:46.280Z] LOG: 🔍 Context呼び出し: namedInputs= {
+[2025-05-22T11:45:33.344+09:00] LOG: 🎬 処理開始: rotate - 11:45:33
+[2025-05-22T11:45:33.344+09:00] LOG: 🔍 sourceValue: mosaic1, type: string
+[2025-05-22T11:45:33.345+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
   "source": "rotate1"
 }
-[2025-05-22T02:27:46.280Z] LOG: 🔍 params= {
+[2025-05-22T11:45:33.346+09:00] LOG: 🔍 params= {
   "operation": "resize",
   "width": 300,
   "height": 300,
   "outputPath": "./output/image1_final.jpg"
 }
-[2025-05-22T02:27:46.281Z] LOG: 🎬 処理開始: resize - 11:27:46
-[2025-05-22T02:27:46.281Z] LOG: 🔍 sourceValue: rotate1, type: string
-[2025-05-22T02:27:46.282Z] LOG: 🔍 Context呼び出し: namedInputs= {
+[2025-05-22T11:45:33.347+09:00] LOG: 🎬 処理開始: resize - 11:45:33
+[2025-05-22T11:45:33.347+09:00] LOG: 🔍 sourceValue: rotate1, type: string
+[2025-05-22T11:45:33.348+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
   "source": "image2"
 }
-[2025-05-22T02:27:46.282Z] LOG: 🔍 params= {
+[2025-05-22T11:45:33.348+09:00] LOG: 🔍 params= {
   "operation": "mosaic",
   "blockSize": 15,
   "outputPath": "./output/image2_mosaic.jpg"
 }
-[2025-05-22T02:27:46.283Z] LOG: 🎬 処理開始: mosaic - 11:27:46
-[2025-05-22T02:27:46.283Z] LOG: 🔍 sourceValue: image2, type: string
-[2025-05-22T02:27:46.283Z] LOG: 🔍 Context呼び出し: namedInputs= {
+[2025-05-22T11:45:33.349+09:00] LOG: 🎬 処理開始: mosaic - 11:45:33
+[2025-05-22T11:45:33.351+09:00] LOG: 🔍 sourceValue: image2, type: string
+[2025-05-22T11:45:33.352+09:00] LOG: 🔍 処理対象: mosaic, 最終入力値: ./images/image2.jpg
+[2025-05-22T11:45:33.352+09:00] LOG: 🔍 処理対象: rotate, 最終入力値: ./output/image3_mosaic.jpg
+[2025-05-22T11:45:33.353+09:00] LOG: 🔍 処理対象: rotate, 最終入力値: ./output/image1_mosaic.jpg
+[2025-05-22T11:45:33.353+09:00] LOG: 🔍 処理対象: resize, 最終入力値: ./output/image1_rotated.jpg
+[2025-05-22T11:45:33.356+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
   "source": "mosaic2"
 }
-[2025-05-22T02:27:46.284Z] LOG: 🔍 params= {
+[2025-05-22T11:45:33.357+09:00] LOG: 🔍 params= {
   "operation": "rotate",
   "angle": 180,
   "outputPath": "./output/image2_rotated.jpg"
 }
-[2025-05-22T02:27:46.284Z] LOG: 🎬 処理開始: rotate - 11:27:46
-[2025-05-22T02:27:46.284Z] LOG: 🔍 sourceValue: mosaic2, type: string
-[2025-05-22T02:27:46.285Z] LOG: 🔍 Context呼び出し: namedInputs= {
+[2025-05-22T11:45:33.359+09:00] LOG: 🎬 処理開始: rotate - 11:45:33
+[2025-05-22T11:45:33.360+09:00] LOG: 🔍 sourceValue: mosaic2, type: string
+[2025-05-22T11:45:33.361+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
+  "source": "image1"
+}
+[2025-05-22T11:45:33.361+09:00] LOG: 🔍 params= {
+  "operation": "mosaic",
+  "blockSize": 10,
+  "outputPath": "./output/image1_mosaic.jpg"
+}
+[2025-05-22T11:45:33.363+09:00] LOG: 🎬 処理開始: mosaic - 11:45:33
+[2025-05-22T11:45:33.363+09:00] LOG: 🔍 sourceValue: image1, type: string
+[2025-05-22T11:45:33.363+09:00] LOG: 🔍 処理対象: mosaic, 最終入力値: ./images/image1.jpg
+[2025-05-22T11:45:33.364+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
+  "source": "image3"
+}
+[2025-05-22T11:45:33.364+09:00] LOG: 🔍 params= {
+  "operation": "mosaic",
+  "blockSize": 8,
+  "outputPath": "./output/image3_mosaic.jpg"
+}
+[2025-05-22T11:45:33.365+09:00] LOG: 🎬 処理開始: mosaic - 11:45:33
+[2025-05-22T11:45:33.365+09:00] LOG: 🔍 sourceValue: image3, type: string
+[2025-05-22T11:45:33.365+09:00] LOG: 🔍 処理対象: mosaic, 最終入力値: ./images/image3.jpg
+[2025-05-22T11:45:33.366+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
   "source": "rotate2"
 }
-[2025-05-22T02:27:46.285Z] LOG: 🔍 params= {
+[2025-05-22T11:45:33.366+09:00] LOG: 🔍 params= {
   "operation": "resize",
   "width": 300,
   "height": 300,
   "outputPath": "./output/image2_final.jpg"
 }
-[2025-05-22T02:27:46.285Z] LOG: 🎬 処理開始: resize - 11:27:46
-[2025-05-22T02:27:46.285Z] LOG: 🔍 sourceValue: rotate2, type: string
-[2025-05-22T02:27:46.286Z] LOG: 🔍 Context呼び出し: namedInputs= {
-  "source": "image3"
+[2025-05-22T11:45:33.367+09:00] LOG: 🎬 処理開始: resize - 11:45:33
+[2025-05-22T11:45:33.367+09:00] LOG: 🔍 sourceValue: rotate2, type: string
+[2025-05-22T11:45:33.368+09:00] LOG: 🔍 処理対象: rotate, 最終入力値: ./output/image2_mosaic.jpg
+[2025-05-22T11:45:33.368+09:00] LOG: 🔍 処理対象: resize, 最終入力値: ./output/image2_rotated.jpg
+[2025-05-22T11:45:33.374+09:00] LOG: ✅ 処理完了: rotate (35ms) - 11:45:33
+[2025-05-22T11:45:33.375+09:00] LOG: 📤 出力: ./output/image3_rotated.jpg
+[2025-05-22T11:45:33.377+09:00] ERROR: ❌ 処理エラー: rotate {
+  "message": "windows error: �f�o�C�X���R�}���h��F���ł��܂���B"
 }
-[2025-05-22T02:27:46.286Z] LOG: 🔍 params= {
-  "operation": "mosaic",
-  "blockSize": 8,
-  "outputPath": "./output/image3_mosaic.jpg"
+[2025-05-22T11:45:33.378+09:00] ERROR: <-- NodeId: rotate1, Agent: imageProcessingAgent
+[2025-05-22T11:45:33.379+09:00] ERROR: {
+  "namedInputs": {
+    "source": "mosaic1"
+  }
 }
-[2025-05-22T02:27:46.286Z] LOG: 🎬 処理開始: mosaic - 11:27:46
-[2025-05-22T02:27:46.286Z] LOG: 🔍 sourceValue: image3, type: string
-[2025-05-22T02:27:46.287Z] LOG: 🔍 Context呼び出し: namedInputs= {
-  "source": "mosaic3"
+[2025-05-22T11:45:33.379+09:00] ERROR: {
+  "message": "windows error: �f�o�C�X���R�}���h��F���ł��܂���B"
 }
-[2025-05-22T02:27:46.287Z] LOG: 🔍 params= {
-  "operation": "rotate",
-  "angle": 270,
-  "outputPath": "./output/image3_rotated.jpg"
+[2025-05-22T11:45:33.380+09:00] ERROR: -->
+[2025-05-22T11:45:33.381+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
+  "result1": "resize1",
+  "result2": "resize2",
+  "result3": "resize3"
 }
-[2025-05-22T02:27:46.288Z] LOG: 🎬 処理開始: rotate - 11:27:46
-[2025-05-22T02:27:46.288Z] LOG: 🔍 sourceValue: mosaic3, type: string
-[2025-05-22T02:27:46.288Z] LOG: 🔍 処理対象: mosaic, 最終入力値: ./images/image1.jpg
-[2025-05-22T02:27:46.288Z] LOG: 🔍 処理対象: mosaic, 最終入力値: ./images/image2.jpg
-[2025-05-22T02:27:46.289Z] LOG: 🔍 処理対象: mosaic, 最終入力値: ./images/image3.jpg
-[2025-05-22T02:27:46.289Z] LOG: 🔍 処理対象: rotate, 最終入力値: ./output/image1_mosaic.jpg
-[2025-05-22T02:27:46.289Z] LOG: 🔍 処理対象: resize, 最終入力値: ./output/image1_rotated.jpg
-[2025-05-22T02:27:46.290Z] LOG: 🔍 処理対象: rotate, 最終入力値: ./output/image2_mosaic.jpg
-[2025-05-22T02:27:46.290Z] LOG: 🔍 処理対象: resize, 最終入力値: ./output/image2_rotated.jpg
-[2025-05-22T02:27:46.290Z] LOG: 🔍 処理対象: rotate, 最終入力値: ./output/image3_mosaic.jpg
-[2025-05-22T02:27:46.299Z] LOG: ✅ 処理完了: mosaic (13ms) - 11:27:46
-[2025-05-22T02:27:46.299Z] LOG: 📤 出力: ./output/image3_mosaic.jpg
-[2025-05-22T02:27:46.300Z] LOG: 🔍 Context呼び出し: namedInputs= {
+[2025-05-22T11:45:33.381+09:00] LOG: 🔍 params= {
+  "operation": "summary",
+  "outputPath": "./output/processing_summary.json"
+}
+[2025-05-22T11:45:33.382+09:00] LOG: 🎬 処理開始: summary - 11:45:33
+[2025-05-22T11:45:33.382+09:00] LOG: 🔍 処理対象: summary, 最終入力値: resize1,resize2,resize3
+[2025-05-22T11:45:33.383+09:00] LOG: ✅ 処理完了: mosaic (35ms) - 11:45:33
+[2025-05-22T11:45:33.383+09:00] LOG: 📤 出力: ./output/image2_mosaic.jpg
+[2025-05-22T11:45:33.384+09:00] LOG: ✅ 処理完了: resize (39ms) - 11:45:33
+[2025-05-22T11:45:33.384+09:00] LOG: 📤 出力: ./output/image1_final.jpg
+[2025-05-22T11:45:33.385+09:00] ERROR: ❌ 処理エラー: resize {
+  "message": "Input file contains unsupported image format"
+}
+[2025-05-22T11:45:33.385+09:00] ERROR: <-- NodeId: resize2, Agent: imageProcessingAgent
+[2025-05-22T11:45:33.385+09:00] ERROR: {
+  "namedInputs": {
+    "source": "rotate2"
+  }
+}
+[2025-05-22T11:45:33.386+09:00] ERROR: {
+  "message": "Input file contains unsupported image format"
+}
+[2025-05-22T11:45:33.386+09:00] ERROR: -->
+[2025-05-22T11:45:33.387+09:00] LOG: ✅ 処理完了: mosaic (23ms) - 11:45:33
+[2025-05-22T11:45:33.387+09:00] LOG: 📤 出力: ./output/image3_mosaic.jpg
+[2025-05-22T11:45:33.388+09:00] LOG: ✅ 処理完了: rotate (32ms) - 11:45:33
+[2025-05-22T11:45:33.388+09:00] LOG: 📤 出力: ./output/image2_rotated.jpg
+[2025-05-22T11:45:33.388+09:00] LOG: ✅ 処理完了: mosaic (27ms) - 11:45:33
+[2025-05-22T11:45:33.389+09:00] LOG: 📤 出力: ./output/image1_mosaic.jpg
+[2025-05-22T11:45:33.390+09:00] LOG: ✅ 処理完了: summary (9ms) - 11:45:33
+[2025-05-22T11:45:33.390+09:00] LOG: 📤 出力: [object Object]
+[2025-05-22T11:45:33.418+09:00] LOG: 🔍 Context呼び出し: namedInputs= {
   "source": "rotate3"
 }
-[2025-05-22T02:27:46.300Z] LOG: 🔍 params= {
+[2025-05-22T11:45:33.418+09:00] LOG: 🔍 params= {
   "operation": "resize",
   "width": 300,
   "height": 300,
   "outputPath": "./output/image3_final.jpg"
 }
-[2025-05-22T02:27:46.301Z] LOG: 🎬 処理開始: resize - 11:27:46
-[2025-05-22T02:27:46.301Z] LOG: 🔍 sourceValue: rotate3, type: string
-[2025-05-22T02:27:46.303Z] ERROR: ❌ 処理エラー: rotate {
-  "message": "./output/image1_rotated.jpg: unable to open for write\nwindows error: �f�o�C�X���R�}���h��F���ł��܂���B"
-}
-[2025-05-22T02:27:46.304Z] ERROR: <-- NodeId: rotate1, Agent: imageProcessingAgent
-[2025-05-22T02:27:46.304Z] ERROR: {
-  "namedInputs": {
-    "source": "mosaic1"
-  }
-}
-[2025-05-22T02:27:46.305Z] ERROR: {
-  "message": "./output/image1_rotated.jpg: unable to open for write\nwindows error: �f�o�C�X���R�}���h��F���ł��܂���B"
-}
-[2025-05-22T02:27:46.305Z] ERROR: -->
-[2025-05-22T02:27:46.305Z] LOG: 🔍 Context呼び出し: namedInputs= {
-  "result1": "resize1",
-  "result2": "resize2",
-  "result3": "resize3"
-}
-[2025-05-22T02:27:46.306Z] LOG: 🔍 params= {
-  "operation": "summary",
-  "outputPath": "./output/processing_summary.json"
-}
-[2025-05-22T02:27:46.306Z] LOG: 🎬 処理開始: summary - 11:27:46
-[2025-05-22T02:27:46.307Z] LOG: 🔍 処理対象: summary, 最終入力値: resize1,resize2,resize3
-[2025-05-22T02:27:46.307Z] LOG: ✅ 処理完了: rotate (24ms) - 11:27:46
-[2025-05-22T02:27:46.307Z] LOG: 📤 出力: ./output/image2_rotated.jpg
-[2025-05-22T02:27:46.308Z] LOG: ✅ 処理完了: mosaic (26ms) - 11:27:46
-[2025-05-22T02:27:46.308Z] LOG: 📤 出力: ./output/image2_mosaic.jpg
-[2025-05-22T02:27:46.308Z] LOG: ✅ 処理完了: resize (28ms) - 11:27:46
-[2025-05-22T02:27:46.309Z] LOG: 📤 出力: ./output/image1_final.jpg
-[2025-05-22T02:27:46.309Z] LOG: 🔍 処理対象: resize, 最終入力値: ./output/image3_rotated.jpg
-[2025-05-22T02:27:46.309Z] LOG: ✅ 処理完了: rotate (22ms) - 11:27:46
-[2025-05-22T02:27:46.309Z] LOG: 📤 出力: ./output/image3_rotated.jpg
-[2025-05-22T02:27:46.310Z] LOG: ✅ 処理完了: mosaic (33ms) - 11:27:46
-[2025-05-22T02:27:46.310Z] LOG: 📤 出力: ./output/image1_mosaic.jpg
-[2025-05-22T02:27:46.310Z] LOG: ✅ 処理完了: resize (25ms) - 11:27:46
-[2025-05-22T02:27:46.310Z] LOG: 📤 出力: ./output/image2_final.jpg
-[2025-05-22T02:27:46.312Z] LOG: ✅ 処理完了: summary (7ms) - 11:27:46
-[2025-05-22T02:27:46.312Z] LOG: 📤 出力: [object Object]
-[2025-05-22T02:27:46.316Z] LOG: ✅ 処理完了: resize (16ms) - 11:27:46
-[2025-05-22T02:27:46.317Z] LOG: 📤 出力: ./output/image3_final.jpg
-[2025-05-22T02:27:46.317Z] ❌ Context版エラー: ./output/image1_rotated.jpg: unable to open for write
-windows error: �f�o�C�X���R�}���h��F���ł��܂���B
-[2025-05-22T02:27:46.318Z] スタックトレース: Error: ./output/image1_rotated.jpg: unable to open for write
-windows error: �f�o�C�X���R�}���h��F���ł��܂���B
+[2025-05-22T11:45:33.419+09:00] LOG: 🎬 処理開始: resize - 11:45:33
+[2025-05-22T11:45:33.419+09:00] LOG: 🔍 sourceValue: rotate3, type: string
+[2025-05-22T11:45:33.420+09:00] LOG: 🔍 処理対象: resize, 最終入力値: ./output/image3_rotated.jpg
+[2025-05-22T11:45:33.424+09:00] LOG: ✅ 処理完了: resize (6ms) - 11:45:33
+[2025-05-22T11:45:33.425+09:00] LOG: 📤 出力: ./output/image3_final.jpg
+[2025-05-22T11:45:33.425+09:00] ❌ Windows対応版エラー: windows error: �f�o�C�X���R�}���h��F���ł��܂���B
+[2025-05-22T11:45:33.426+09:00] スタックトレース: Error: windows error: �f�o�C�X���R�}���h��F���ł��܂���B
     at Sharp.toFile (D:\Development\graphai-image-demo2\node_modules\sharp\lib\output.js:90:19)
     at rotateImage (D:\Development\graphai-image-demo2\imageAgent-context.js:182:6)
-    at async imageProcessingAgent (D:\Development\graphai-image-demo2\imageAgent-context.js:60:18)
+    at async Object.imageProcessingAgent (D:\Development\graphai-image-demo2\imageAgent-context.js:60:18)
+    at async windowsSafeAgent (D:\Development\graphai-image-demo2\run-demo-context-log-fixed.js:126:14)
     at async F.execute (D:\Development\graphai-image-demo2\node_modules\graphai\lib\bundle.cjs.js:1:11655)
