@@ -1,17 +1,17 @@
-# GraphAI 画像処理パイプライン設定
+# GraphAI 画像処理パイプライン設定（修正版）
 version: 0.5.0
 
 # データフローグラフ定義
 nodes:
   # === 入力画像ノード ===
   image1:
-    value: "./images/image1.png"
+    value: "./images/image1.jpg"  # .png → .jpg に修正
     
   image2:
-    value: "./images/image2.png"
+    value: "./images/image2.jpg"  # .png → .jpg に修正
     
   image3:
-    value: "./images/image3.png"
+    value: "./images/image3.jpg"  # .png → .jpg に修正
 
   # === パイプライン1: image1の処理 ===
   mosaic1:
@@ -21,7 +21,7 @@ nodes:
       blockSize: 10
       outputPath: "./output/image1_mosaic.jpg"
     inputs:
-      source: "image1"
+      - "image1"  # 簡略化された入力指定
     
   rotate1:
     agent: "imageProcessingAgent" 
@@ -30,7 +30,7 @@ nodes:
       angle: 90
       outputPath: "./output/image1_rotated.jpg"
     inputs:
-      source: "mosaic1"
+      - "mosaic1"  # 前のノードの出力を使用
     
   resize1:
     agent: "imageProcessingAgent"
@@ -40,7 +40,7 @@ nodes:
       height: 300
       outputPath: "./output/image1_final.jpg"
     inputs:
-      source: "rotate1"
+      - "rotate1"
 
   # === パイプライン2: image2の処理（並列実行） ===
   mosaic2:
@@ -50,7 +50,7 @@ nodes:
       blockSize: 15
       outputPath: "./output/image2_mosaic.jpg"
     inputs:
-      source: "image2"
+      - "image2"
     
   rotate2:
     agent: "imageProcessingAgent"
@@ -59,7 +59,7 @@ nodes:
       angle: 180
       outputPath: "./output/image2_rotated.jpg"
     inputs:
-      source: "mosaic2"
+      - "mosaic2"
     
   resize2:
     agent: "imageProcessingAgent"
@@ -69,7 +69,7 @@ nodes:
       height: 300
       outputPath: "./output/image2_final.jpg"
     inputs:
-      source: "rotate2"
+      - "rotate2"
 
   # === パイプライン3: image3の処理（並列実行） ===
   mosaic3:
@@ -79,7 +79,7 @@ nodes:
       blockSize: 8
       outputPath: "./output/image3_mosaic.jpg"
     inputs:
-      source: "image3"
+      - "image3"
     
   rotate3:
     agent: "imageProcessingAgent"
@@ -88,7 +88,7 @@ nodes:
       angle: 270
       outputPath: "./output/image3_rotated.jpg"
     inputs:
-      source: "mosaic3"
+      - "mosaic3"
     
   resize3:
     agent: "imageProcessingAgent"
@@ -98,7 +98,7 @@ nodes:
       height: 300
       outputPath: "./output/image3_final.jpg"
     inputs:
-      source: "rotate3"
+      - "rotate3"
 
   # === 最終結果マージ ===
   summary:
@@ -107,6 +107,6 @@ nodes:
       operation: "summary"
       outputPath: "./output/processing_summary.json"
     inputs:
-      result1: "resize1"
-      result2: "resize2"
-      result3: "resize3"
+      - "resize1"
+      - "resize2" 
+      - "resize3"
