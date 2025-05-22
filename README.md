@@ -1,245 +1,183 @@
-# 🚀 GraphAI 画像処理パイプライン デモ
+# 🚀 GraphAI 逐次処理 vs 並列処理 比較デモ
 
-GraphAIを使用した並列画像処理のデモンストレーションです。
-3つの画像を同時に「モザイク → 回転 → リサイズ」の処理を行います。
+GraphAIを使用した並列画像処理の効果を**インタラクティブなWebデモ**で実感できます！
+同じ画像処理タスクを「逐次処理」と「GraphAI並列処理」で実行して、パフォーマンスの違いを比較します。
 
-## 📋 セットアップ手順
+## 📋 Docker環境での実行手順
 
-### 新しい処理ステップ追加
+### 1. プロジェクトディレクトリに移動
 
-`imageAgent.js` に新しい処理を追加：
-
-```javascript
-case 'blur':
-  result = await this.blurImage(namedInputs[0], params);
-  break;
-
-async blurImage(inputPath, params) {
-  const { sigma = 3, outputPath } = params;
-  
-  await this.ensureDir(path.dirname(outputPath));
-  
-  await sharp(inputPath)
-    .blur(sigma)
-    .jpeg({ quality: 90 })
-    .toFile(outputPath);
-  
-  return { outputPath, sigma };
-}
+```bash
+cd D:\Development\graphai-image-demo2
 ```
 
-## 🎯 デモのポイント
+### 2. 画像ファイル確認
+
+`images/` ディレクトリに以下の画像があることを確認：
+- `image1.jpg` - ポートレート画像
+- `image2.jpg` - フォトグラファー画像  
+- `image3.jpg` - ペッパー画像
+
+### 3. 🚀 比較デモ実行（推奨）
+
+```bash
+# 比較デモサーバーを起動
+docker-compose up graphai-comparison-demo
+```
+
+**アクセス**: `http://localhost:3000`
+
+### 4. 📊 従来デモ実行（オプション）
+
+```bash
+# 従来のデモも同時実行可能
+docker-compose up graphai-demo
+```
+
+**アクセス**: `http://localhost:3001`
+
+### 5. 🎪 両方同時実行
+
+```bash
+# すべてのサービスを同時起動
+docker-compose up
+```
+
+- **比較デモ**: `http://localhost:3000`
+- **従来デモ**: `http://localhost:3001`
+
+## 🎬 インタラクティブデモの使い方
+
+### Step 1: Webブラウザでアクセス
+```
+http://localhost:3000
+```
+
+### Step 2: デモ実行
+1. **「🔄 逐次処理実行」**ボタンをクリック
+   - 従来の1つずつ順番に処理する方法
+   - 処理時間が計測されます
+
+2. **「⚡ GraphAI並列処理実行」**ボタンをクリック  
+   - GraphAIによる並列処理
+   - 自動的に依存関係を解析して最適化
+
+3. **結果比較**
+   - 速度向上率、効率改善、時間短縮が表示
+   - 処理済み画像も確認できます
+
+### Step 3: リセット
+- **「🗑️ リセット」**ボタンで初期状態に戻す
+
+## 📊 Docker環境での実行コマンド一覧
+
+```bash
+# 🎯 比較デモのみ起動（推奨）
+docker-compose up graphai-comparison-demo
+
+# 🔧 バックグラウンド実行
+docker-compose up -d graphai-comparison-demo
+
+# 🧹 コンテナ停止・削除
+docker-compose down
+
+# 🔄 イメージ再ビルド
+docker-compose build
+
+# 📝 ログ確認
+docker-compose logs graphai-comparison-demo
+
+# 🏗️ 強制再ビルド
+docker-compose build --no-cache
+```
+
+## 🎯 期待される結果
+
+### 一般的なパフォーマンス向上
+- **速度向上**: 2-3倍
+- **効率改善**: 50-70%
+- **時間短縮**: 1000-2000ms
 
 ### GraphAIの利点
-- **宣言的記述**: YAMLで処理フローを定義
-- **自動並列化**: 依存関係のない処理を自動並列実行
-- **エラーハンドリング**: 個別処理の失敗が全体に影響しない
-- **スケーラビリティ**: 画像数やステップ数の追加が容易
+✅ **宣言的記述**: YAMLで処理フローを簡単に定義  
+✅ **自動並列化**: 依存関係を解析して自動で並列実行  
+✅ **エラーハンドリング**: 個別処理の失敗が全体に影響しない  
+✅ **スケーラビリティ**: 画像数やステップ数の追加が容易
 
-### 従来手法との比較
-```javascript
-// 従来のコード
-for (let i = 0; i < images.length; i++) {
-  const mosaic = await applyMosaic(images[i]);
-  const rotated = await rotateImage(mosaic);
-  const resized = await resizeImage(rotated);
-}
+## 🎥 プレゼンテーション用の流れ
 
-// GraphAI
-// YAML設定のみで並列処理が実現
+### 1. Docker起動 (30秒)
+```bash
+docker-compose up graphai-comparison-demo
 ```
+
+### 2. デモ実行 (3分)
+1. **逐次処理実行** → 基準時間の測定
+2. **GraphAI実行** → 並列処理の効果確認
+3. **結果比較** → 具体的な数値で効果を実感
+
+### 3. 技術説明 (2分)
+- **YAML設定**: わずか50行で並列処理パイプライン
+- **依存関係解析**: 自動的にグラフ構造を最適化
+- **拡張性**: 新しい処理の追加が容易
 
 ## 🐛 トラブルシューティング
 
 ### よくある問題
 
-#### 1. sharp インストールエラー
+#### 1. ポート3000が使用中
 ```bash
-# 解決方法
-npm install --platform=darwin --arch=x64 sharp
-# または
-npm rebuild sharp
+# docker-compose.ymlのポート変更
+ports:
+  - "3001:3000"  # 3001ポートを使用
 ```
 
-#### 2. 画像ファイルが見つからない
+#### 2. イメージビルドエラー
 ```bash
-# images/ ディレクトリに画像ファイルがあることを確認
+# キャッシュをクリアして再ビルド
+docker-compose build --no-cache
+```
+
+#### 3. コンテナが起動しない
+```bash
+# ログ確認
+docker-compose logs graphai-comparison-demo
+
+# コンテナ状態確認
+docker-compose ps
+```
+
+#### 4. 画像ファイルが見つからない
+```bash
+# ホスト側で確認
 ls images/
 # image1.jpg, image2.jpg, image3.jpg があることを確認
+
+# コンテナ内で確認
+docker-compose exec graphai-comparison-demo ls images/
 ```
 
-#### 3. ポート3000が使用中
-```bash
-# 他のポートを使用する場合
-PORT=3001 npm run demo
-```
-
-#### 4. GraphAI バージョン問題
-```bash
-# 最新版インストール
-npm install @receptron/graphai@latest
-```
-
-## 📁 プロジェクト構造
+## 📁 Docker構成
 
 ```
-graphai-image-demo/
-├── package.json          # プロジェクト設定
-├── graph.yaml            # GraphAI設定
-├── imageAgent.js         # 画像処理エージェント
-├── run-demo.js          # デモ実行スクリプト
-├── README.md            # このファイル
-├── images/              # 入力画像
-│   ├── image1.jpg
-│   ├── image2.jpg
-│   └── image3.jpg
-└── output/              # 処理結果（自動生成）
-    ├── image1_mosaic.jpg
-    ├── image1_rotated.jpg
-    ├── image1_final.jpg
-    ├── image2_mosaic.jpg
-    ├── image2_rotated.jpg
-    ├── image2_final.jpg
-    ├── image3_mosaic.jpg
-    ├── image3_rotated.jpg
-    ├── image3_final.jpg
-    └── processing_summary.json
+docker-compose.yml:
+  graphai-comparison-demo:  # メインの比較デモ (port 3000)
+  graphai-demo:            # 従来デモ (port 3001)
+
+Dockerfile:
+  - Node.js 18
+  - Sharp (画像処理)
+  - 必要なシステム依存関係
+  - start-web-server.js をデフォルト実行
 ```
-
-## 🎥 プレゼンテーション用スクリプト
-
-### 1. 導入 (2分)
-「今日はGraphAIという、データフロー指向のAI処理フレームワークをご紹介します。特徴は、YAMLで処理パイプラインを宣言的に定義するだけで、自動的に並列処理が実現されることです。」
-
-### 2. 問題設定 (1分)
-「例えば、3枚の画像に同じ処理（モザイク→回転→リサイズ）を適用したいとします。従来なら、forループで1枚ずつ順番に処理していました。GraphAIなら、並列処理で効率化できます。」
-
-### 3. 実演 (5分)
-```bash
-# 実際にコマンド実行
-npm run demo
-```
-
-「見てください、3つのパイプラインが同時に動き始めました。各処理の完了タイミングがバラバラなのは、実際に並列処理されている証拠です。」
-
-### 4. 結果確認 (1分)
-「ブラウザで結果を確認してみましょう。元画像から最終画像まで、全ステップの結果が表示されています。」
-
-### 5. YAML設定説明 (1分)
-「これらの並列処理は、たった50行のYAML設定で定義されています。依存関係は自動解析され、並列化も自動的に行われます。」
-
-## 🌟 拡張アイデア
-
-### より高度なデモ
-- **リアルタイム進捗バー**: Web UIでの処理状況表示
-- **動画処理**: フレーム単位での並列処理
-- **ML推論**: 複数モデルでの並列予測
-- **API統合**: 複数のWebAPIからの並列データ取得
-
-### 実用的な応用例
-- **ECサイト**: 商品画像の一括リサイズ・フォーマット変換
-- **メディア**: 動画のサムネイル生成と各種サイズ出力
-- **医療**: 医療画像の複数解析手法での並列診断支援
-- **製造業**: 品質検査画像の複数アルゴリズムでの並列解析
 
 ---
 
-**🎯 このデモで伝えたいこと**
-GraphAIは「難しい並列処理を簡単に」実現するフレームワークです。宣言的な設定だけで、高性能な並列処理パイプラインを構築できます。1. プロジェクト作成とセットアップ
+**🎯 Docker環境での実行**
 
 ```bash
-# プロジェクトディレクトリ作成
-mkdir graphai-image-demo
-cd graphai-image-demo
-
-# package.jsonを作成（上記のコンテンツをコピー）
-
-# 依存関係インストール
-npm install
-
-# 必要なディレクトリ作成
-mkdir images output
+cd D:\Development\graphai-image-demo2
+docker-compose up graphai-comparison-demo
 ```
 
-### 2. ファイル配置
-
-以下のファイルを作成してください：
-
-- `graph.yaml` - GraphAI設定ファイル
-- `imageAgent.js` - 画像処理エージェント
-- `run-demo.js` - デモ実行スクリプト
-- `package.json` - プロジェクト設定
-
-### 3. 画像ファイル準備
-
-`images/` ディレクトリに以下の画像を配置：
-- `image1.jpg` - ポートレート画像
-- `image2.jpg` - フォトグラファー画像  
-- `image3.jpg` - ペッパー画像
-
-**画像サイズ**: 推奨 500x500px以上（任意のJPEG形式）
-
-## 🎬 実行方法
-
-### デモ実行
-
-```bash
-npm run demo
-```
-
-または
-
-```bash
-node run-demo.js
-```
-
-### 実行の流れ
-
-1. **並列処理開始**: 3つのパイプラインが同時に実行
-2. **リアルタイム進捗**: コンソールに処理状況表示
-3. **結果出力**: `output/` ディレクトリに処理済み画像保存
-4. **Web表示**: `http://localhost:3000` で結果を視覚的に確認
-
-## 📊 プレゼンテーション用の流れ
-
-### 事前準備 (1分)
-```bash
-# ターミナルを開いて準備
-cd graphai-image-demo
-npm run demo
-```
-
-### デモ実行 (5分)
-1. **コマンド実行**: `npm run demo` を実行
-2. **コンソール表示**: 並列処理の進捗をリアルタイム表示
-3. **結果確認**: ブラウザで処理結果を表示
-4. **ファイル確認**: `output/` ディレクトリの生成ファイル表示
-
-### 説明ポイント (4分)
-- **YAML設定**: シンプルな宣言的記述
-- **並列処理**: 3つのパイプラインが同時実行
-- **依存関係**: グラフ構造での自動最適化
-- **拡張性**: 新しい処理ノードの追加が容易
-
-## 🔧 カスタマイズ
-
-### 処理パラメータ変更
-
-`graph.yaml` で各処理のパラメータを調整：
-
-```yaml
-mosaic1:
-  params:
-    blockSize: 15  # モザイクブロックサイズ
-    
-rotate1:
-  params:
-    angle: 45      # 回転角度
-    
-resize1:
-  params:
-    width: 400     # リサイズ幅
-    height: 400    # リサイズ高さ
-```
-
-###
+ブラウザで `http://localhost:3000` にアクセス → インタラクティブ比較デモ開始！

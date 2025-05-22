@@ -1,4 +1,4 @@
-# Dockerfile - GraphAI並列処理デモ用（完全リフレッシュ版）
+# Dockerfile - GraphAI比較デモ用
 FROM node:18-bullseye
 
 # 作業ディレクトリ設定
@@ -16,11 +16,8 @@ RUN apt-get update && apt-get install -y \
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# アプリケーションコードをコピー（明示的に最新版を使用）
+# アプリケーションコードをコピー
 COPY . .
-
-# 古いエージェントファイルを無効化（確実にrun-demo-showcase.jsの統合版を使用）
-RUN rm -f imageAgent-context.js imageAgent-windows-safe.js || true
 
 # 必要なディレクトリを作成
 RUN mkdir -p images output logs
@@ -28,11 +25,11 @@ RUN mkdir -p images output logs
 # ファイル確認（デバッグ用）
 RUN echo "=== Dockerfile: ファイル確認 ===" && \
     ls -la && \
-    echo "=== run-demo-showcase.js の最初の10行 ===" && \
-    head -10 run-demo-showcase.js
+    echo "=== start-web-server.js 確認 ===" && \
+    head -10 start-web-server.js
 
 # ポート3000を公開（Webサーバー用）
 EXPOSE 3000
 
-# デフォルトコマンド
-CMD ["npm", "run", "demo"]
+# デフォルトコマンド（比較デモWebサーバー）
+CMD ["node", "start-web-server.js"]

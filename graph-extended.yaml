@@ -1,0 +1,222 @@
+# 拡張版 graph.yaml - より大きな処理で並列効果を発揮
+version: 0.5.0
+
+nodes:
+  # === 入力画像ノード（5枚に増加） ===
+  image1:
+    value: "./images/image1.jpg"
+    
+  image2:
+    value: "./images/image2.jpg"
+    
+  image3:
+    value: "./images/image3.jpg"
+    
+  image4:
+    value: "./images/image1.jpg"  # 同じ画像を使い回し
+    
+  image5:
+    value: "./images/image2.jpg"  # 同じ画像を使い回し
+
+  # === パイプライン1: image1の処理 ===
+  mosaic1:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 8
+      outputPath: "./output/image1_mosaic.jpg"
+    inputs:
+      source: "image1"
+    
+  blur1:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "blur"
+      sigma: 2
+      outputPath: "./output/image1_blur.jpg"
+    inputs:
+      source: "mosaic1"
+    
+  rotate1:
+    agent: "imageProcessingAgent" 
+    params:
+      operation: "rotate"
+      angle: 90
+      outputPath: "./output/image1_rotated.jpg"
+    inputs:
+      source: "blur1"
+    
+  resize1:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 300
+      height: 300
+      outputPath: "./output/image1_final.jpg"
+    inputs:
+      source: "rotate1"
+
+  # === パイプライン2: image2の処理 ===
+  mosaic2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 12
+      outputPath: "./output/image2_mosaic.jpg"
+    inputs:
+      source: "image2"
+    
+  blur2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "blur"
+      sigma: 3
+      outputPath: "./output/image2_blur.jpg"
+    inputs:
+      source: "mosaic2"
+    
+  rotate2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "rotate" 
+      angle: 180
+      outputPath: "./output/image2_rotated.jpg"
+    inputs:
+      source: "blur2"
+    
+  resize2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 400
+      height: 400
+      outputPath: "./output/image2_final.jpg"
+    inputs:
+      source: "rotate2"
+
+  # === パイプライン3: image3の処理 ===
+  mosaic3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 6
+      outputPath: "./output/image3_mosaic.jpg"
+    inputs:
+      source: "image3"
+    
+  blur3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "blur"
+      sigma: 4
+      outputPath: "./output/image3_blur.jpg"
+    inputs:
+      source: "mosaic3"
+    
+  rotate3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "rotate"
+      angle: 270
+      outputPath: "./output/image3_rotated.jpg"
+    inputs:
+      source: "blur3"
+    
+  resize3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 500
+      height: 500
+      outputPath: "./output/image3_final.jpg"
+    inputs:
+      source: "rotate3"
+
+  # === パイプライン4: image4の処理 ===
+  mosaic4:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 10
+      outputPath: "./output/image4_mosaic.jpg"
+    inputs:
+      source: "image4"
+    
+  blur4:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "blur"
+      sigma: 2
+      outputPath: "./output/image4_blur.jpg"
+    inputs:
+      source: "mosaic4"
+    
+  rotate4:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "rotate"
+      angle: 45
+      outputPath: "./output/image4_rotated.jpg"
+    inputs:
+      source: "blur4"
+    
+  resize4:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 350
+      height: 350
+      outputPath: "./output/image4_final.jpg"
+    inputs:
+      source: "rotate4"
+
+  # === パイプライン5: image5の処理 ===
+  mosaic5:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 14
+      outputPath: "./output/image5_mosaic.jpg"
+    inputs:
+      source: "image5"
+    
+  blur5:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "blur"
+      sigma: 5
+      outputPath: "./output/image5_blur.jpg"
+    inputs:
+      source: "mosaic5"
+    
+  rotate5:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "rotate"
+      angle: 135
+      outputPath: "./output/image5_rotated.jpg"
+    inputs:
+      source: "blur5"
+    
+  resize5:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 450
+      height: 450
+      outputPath: "./output/image5_final.jpg"
+    inputs:
+      source: "rotate5"
+
+  # === 最終結果マージ ===
+  summary:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "summary"
+      outputPath: "./output/processing_summary.json"
+    inputs:
+      result1: "resize1"
+      result2: "resize2"  
+      result3: "resize3"
+      result4: "resize4"
+      result5: "resize5"
