@@ -1,254 +1,512 @@
-// run-demo-showcase.js - Linux/Docker最適化版
+// run-demo-showcase.js - 完全統合版（ノード名解決機能付き）
 const { GraphAI } = require('graphai');
 const fs = require('fs').promises;
+const fsSync = require('fs');
+const path = require('path');
 const yaml = require('js-yaml');
-const express = require('express');
-const cors = require('cors');
+const sharp = require('sharp');
 
-// 進捗追跡クラス（Linux最適化）
-class ParallelProgressTracker {
-  constructor() {
-    this.pipelines = {
-      'Pipeline 1 📸': { steps: [], currentStep: 0, color: '🔴', emoji: '📸' },
-      'Pipeline 2 🌶️': { steps: [], currentStep: 0, color: '🟢', emoji: '🌶️' },
-      'Pipeline 3 👩': { steps: [], currentStep: 0, color: '🔵', emoji: '👩' }
-    };
-    this.startTime = null;
-    this.events = [];
-  }
-  
-  start() {
-    this.startTime = Date.now();
-    console.log('\n' + '='.repeat(70));
-    console.log('🚀 GraphAI 並列処理デモ開始！（Linux/Docker版）');
-    console.log('='.repeat(70));
-    this.displayHeader();
-  }
-  
-  displayHeader() {
-    console.log('📊 リアルタイム並列進捗表示:');
-    console.log('🔴 Pipeline 1 📸: 測量技師の写真 (Mosaic→Rotate→Resize)');
-    console.log('🟢 Pipeline 2 🌶️: ピーマンの写真   (Mosaic→Rotate→Resize)');  
-    console.log('🔵 Pipeline 3 👩: ポートレート写真 (Mosaic→Rotate→Resize)');
-    console.log('');
-    console.log('💡 3つのパイプラインが同時実行される様子を確認してください');
-    console.log('');
-  }
-  
-  logEvent(nodeId, status, duration = null) {
-    const elapsed = Date.now() - this.startTime;
-    const pipeline = this.getPipelineFromNode(nodeId);
-    const emoji = this.getStatusEmoji(status);
-    const pipelineInfo = this.pipelines[pipeline];
-    const color = pipelineInfo?.color || '⚪';
-    const pipeEmoji = pipelineInfo?.emoji || '📋';
-    
-    const event = {
-      nodeId,
-      pipeline,
-      status,
-      elapsed,
-      duration,
-      timestamp: this.getJSTTime()
-    };
-    
-    this.events.push(event);
-    
-    if (status === 'start') {
-      console.log(`${color} [${pipeline}] ${pipeEmoji} ${nodeId} ${emoji} 開始 (+${elapsed}ms)`);
-    } else if (status === 'complete') {
-      console.log(`${color} [${pipeline}] ${pipeEmoji} ${nodeId} ${emoji} 完了 (${duration}ms) [+${elapsed}ms]`);
-      this.updateConcurrentDisplay(elapsed);
-    }
-  }
-  
-  getPipelineFromNode(nodeId) {
-    if (nodeId.includes('1')) return 'Pipeline 1 📸';
-    if (nodeId.includes('2')) return 'Pipeline 2 🌶️';
-    if (nodeId.includes('3')) return 'Pipeline 3 👩';
-    return 'Summary 📋';
-  }
-  
-  getStatusEmoji(status) {
-    switch (status) {
-      case 'start': return '🚀';
-      case 'complete': return '✅';
-      case 'error': return '❌';
-      default: return '🔄';
-    }
-  }
-  
-  updateConcurrentDisplay(currentTime) {
-    // 並列実行の可視化
-    const concurrentOps = this.events.filter(e => 
-      e.status === 'start' && 
-      this.events.some(e2 => 
-        e2.nodeId !== e.nodeId && 
-        e2.status === 'start' && 
-        Math.abs(e.elapsed - e2.elapsed) < 100
-      )
-    );
-    
-    if (concurrentOps.length > 1) {
-      console.log(`   ⚡ 並列実行検出: ${concurrentOps.length}個の処理が同時実行中！`);
-    }
-  }
-  
-  getJSTTime() {
-    const now = new Date();
-    return now.toLocaleTimeString('ja-JP', {
+console.log('🚀 デモ初期化中...');
+
+// ===== 確実なログ機能実装 =====
+const logFileName = 'graphai-demo.log';
+const logFilePath = path.join('/app', 'logs', logFileName);
+
+// ログディレクトリ作成
+if (!fsSync.existsSync('/app/logs')) {
+  fsSync.mkdirSync('/app/logs', { recursive: true });
+  console.log('📁 ログディレクトリ作成: /app/logs');
+}
+
+// 既存のログファイルを削除（新規作成）
+if (fsSync.existsSync(logFilePath)) {
+  fsSync.unlinkSync(logFilePath);
+  console.log('🗑️  既存ログファイル削除: ' + logFilePath);
+}
+
+// 日本時間取得関数
+function getJSTTime() {
+  const now = new Date();
+  const jstOffset = 9 * 60; // JST = UTC + 9時間
+  const jst = new Date(now.getTime() + (jstOffset * 60 * 1000));
+  return jst;
+}
+
+// 日本時間フォーマット関数
+function formatJSTTime(date = null) {
+  const jstTime = date || getJSTTime();
+  return {
+    iso: jstTime.toISOString().replace('Z', '+09:00'),
+    local: jstTime.toLocaleString('ja-JP', { 
       timeZone: 'Asia/Tokyo',
+      year: 'numeric',
+      month: '2-digit', 
+      day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
-    });
+    }),
+    time: jstTime.toLocaleTimeString('ja-JP', {
+      timeZone: 'Asia/Tokyo',
+      hour: '2-digit',
+      minute: '2-digit', 
+      second: '2-digit'
+    })
+  };
+}
+
+// 元のconsole関数を保存
+const originalLog = console.log;
+const originalError = console.error;
+
+// ログ書き込み関数（確実版）
+function writeLogSafe(message, isError = false) {
+  const timeInfo = formatJSTTime();
+  const logMessage = `[${timeInfo.iso}] ${message}\n`;
+  
+  // コンソールに出力（元の関数を使用）
+  if (isError) {
+    originalError(message);
+  } else {
+    originalLog(message);
   }
   
-  displayFinalResults(totalTime) {
-    console.log('\n' + '🎉'.repeat(25));
-    console.log('🏆 GraphAI 並列処理完了！（Linux/Docker版）');
-    console.log('🎉'.repeat(25));
-    console.log('');
-    
-    // 順次処理との比較
-    const sequentialTime = (30 + 25 + 20) * 3; // 各ステップの想定時間 × 3パイプライン
-    const speedup = (sequentialTime / totalTime).toFixed(2);
-    const efficiency = ((speedup / 3) * 100).toFixed(1); // 3コア想定
-    
-    console.log('📈 パフォーマンス比較結果:');
-    console.log(`   🐌 順次処理（想定）: ${sequentialTime}ms`);
-    console.log(`   ⚡ 並列処理（実際）: ${totalTime}ms`);
-    console.log(`   🚀 高速化率: ${speedup}倍`);
-    console.log(`   💯 並列効率: ${efficiency}%`);
-    console.log('');
-    
-    console.log('📊 詳細な並列実行タイムライン:');
-    this.displayParallelTimeline();
-    
-    console.log('\n💡 GraphAI並列処理の利点:');
-    console.log('   ✅ YAML設定だけで複雑な並列処理を実現');
-    console.log('   ✅ 依存関係を自動解析・最適化');
-    console.log('   ✅ Linux環境で最高のパフォーマンス');
-    console.log('   ✅ スケーラブルな処理パイプライン');
-    console.log('   ✅ コンテナ環境での安定動作');
-    
-    console.log('\n🎉'.repeat(25));
-  }
-  
-  displayParallelTimeline() {
-    const timelineWidth = 60;
-    const maxTime = Math.max(...this.events.map(e => e.elapsed));
-    
-    console.log('   Time: 0ms' + ' '.repeat(timelineWidth-15) + `${maxTime}ms`);
-    console.log('   ' + '├' + '─'.repeat(timelineWidth-2) + '┤');
-    
-    // 各パイプラインのタイムライン表示
-    Object.entries(this.pipelines).forEach(([name, pipeline]) => {
-      const pipelineEvents = this.events.filter(e => e.pipeline === name && e.status === 'complete');
-      let timeline = ' '.repeat(timelineWidth);
-      
-      pipelineEvents.forEach(event => {
-        const position = Math.floor((event.elapsed / maxTime) * (timelineWidth - 1));
-        timeline = timeline.substring(0, position) + '█' + timeline.substring(position + 1);
-      });
-      
-      console.log(`   ${pipeline.color} ${timeline} ${name}`);
-    });
-    
-    console.log('   ' + '└' + '─'.repeat(timelineWidth-2) + '┘');
-    
-    // 並列性の統計
-    const parallelSessions = this.calculateParallelism();
-    console.log(`\n   📊 最大同時実行数: ${parallelSessions.maxConcurrent}個の処理`);
-    console.log(`   ⚡ 平均並列度: ${parallelSessions.averageParallelism.toFixed(1)}`);
-  }
-  
-  calculateParallelism() {
-    let maxConcurrent = 0;
-    let totalParallelTime = 0;
-    let measurements = 0;
-    
-    for (let t = 0; t <= Math.max(...this.events.map(e => e.elapsed)); t += 10) {
-      const concurrent = this.events.filter(e => 
-        e.status === 'start' && e.elapsed <= t &&
-        this.events.some(e2 => e2.nodeId === e.nodeId && e2.status === 'complete' && e2.elapsed > t)
-      ).length;
-      
-      maxConcurrent = Math.max(maxConcurrent, concurrent);
-      totalParallelTime += concurrent;
-      measurements++;
+  // ファイルに出力（リトライ付き）
+  let attempts = 3;
+  while (attempts > 0) {
+    try {
+      fsSync.appendFileSync(logFilePath, logMessage, 'utf8');
+      break; // 成功したらループ終了
+    } catch (error) {
+      attempts--;
+      if (attempts === 0) {
+        originalError(`ログファイル書き込み失敗: ${error.message}`);
+      }
     }
-    
-    return {
-      maxConcurrent,
-      averageParallelism: measurements > 0 ? totalParallelTime / measurements : 0
-    };
   }
 }
 
-const progressTracker = new ParallelProgressTracker();
+// console.log, console.error を上書き（確実版）
+console.log = (...args) => {
+  const message = args.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch (error) {
+        return '[Circular Object]';
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  writeLogSafe(`LOG: ${message}`);
+};
 
-// Linux最適化画像処理エージェント
-const baseAgent = require('./imageAgent-context.js');
+console.error = (...args) => {
+  const message = args.map(arg => {
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch (error) {
+        return '[Circular Object]';
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  writeLogSafe(`ERROR: ${message}`, true);
+};
 
-const linuxOptimizedAgent = async (context) => {
-  const nodeId = context.debugInfo?.nodeId;
-  const operation = context.params?.operation;
-  
-  if (nodeId && operation !== 'summary') {
-    progressTracker.logEvent(nodeId, 'start');
+// デモ開始ログ（確実に出力）
+const startTime = formatJSTTime();
+console.log('🚀 完全統合版デモスクリプト開始 (ノード名解決機能付き)');
+console.log(`📝 ログファイル: ${logFilePath}`);
+console.log(`🕒 実行開始時刻: ${startTime.local}`);
+console.log('='.repeat(60));
+
+// ===== GraphAIノード値解決機能 =====
+let graphDataCache = null; // GraphAI設定をキャッシュ
+
+// ノード名を実際の値に解決する関数
+function resolveNodeValue(nodeName, graphData) {
+  if (!graphData || !graphData.nodes) {
+    console.log(`⚠️  GraphAIデータが無効: ${nodeName}`);
+    return nodeName;
   }
   
+  const node = graphData.nodes[nodeName];
+  if (!node) {
+    console.log(`⚠️  ノードが見つかりません: ${nodeName}`);
+    return nodeName;
+  }
+  
+  // value プロパティがある場合はそれを返す
+  if (node.value) {
+    console.log(`🔍 ノード値解決: ${nodeName} -> ${node.value}`);
+    return node.value;
+  }
+  
+  // value がない場合は、処理済みノードの出力パスを推測
+  const nodeOutputPaths = {
+    'mosaic1': './output/image1_mosaic.jpg',
+    'mosaic2': './output/image2_mosaic.jpg',
+    'mosaic3': './output/image3_mosaic.jpg',
+    'rotate1': './output/image1_rotated.jpg',
+    'rotate2': './output/image2_rotated.jpg',
+    'rotate3': './output/image3_rotated.jpg',
+    'resize1': './output/image1_final.jpg',
+    'resize2': './output/image2_final.jpg',
+    'resize3': './output/image3_final.jpg'
+  };
+  
+  if (nodeOutputPaths[nodeName]) {
+    console.log(`🔍 ノード出力パス解決: ${nodeName} -> ${nodeOutputPaths[nodeName]}`);
+    return nodeOutputPaths[nodeName];
+  }
+  
+  console.log(`⚠️  ノード値解決失敗: ${nodeName}`);
+  return nodeName;
+}
+
+// ===== 完全統合画像処理エージェント（ノード名解決機能付き） =====
+const completeImageProcessingAgent = async (context) => {
   const startTime = Date.now();
   
+  // contextから必要な情報を取得
+  const namedInputs = context.namedInputs || {};
+  const inputs = context.inputs || [];
+  const params = context.params || {};
+  const nodeId = context.debugInfo?.nodeId;
+  
+  console.log(`🔍 [${nodeId}] 統合版エージェント呼び出し:`);
+  console.log(`   namedInputs:`, namedInputs);
+  console.log(`   inputs:`, inputs);
+  console.log(`   params:`, params);
+  
+  if (!params.operation) {
+    throw new Error('params.operation が見つかりません。');
+  }
+  
+  console.log(`🎬 [${nodeId}] 処理開始: ${params.operation} - ${new Date().toLocaleTimeString('ja-JP', {timeZone: 'Asia/Tokyo'})}`);
+  
   try {
-    // Linux環境では並列処理が安定なので遅延不要
-    const result = await baseAgent.agent(context);
+    let result;
+    let inputValue;
     
-    const duration = Date.now() - startTime;
-    
-    if (nodeId && operation !== 'summary') {
-      progressTracker.logEvent(nodeId, 'complete', duration);
+    if (params.operation === 'summary') {
+      // summary操作の場合は全ての入力を配列として取得
+      inputValue = inputs.length > 0 ? inputs : Object.values(namedInputs);
+      console.log(`🔍 [${nodeId}] Summary入力値:`, inputValue.length, '個のアイテム');
+    } else {
+      // 通常の処理の場合、最初の入力を使用
+      const firstInput = inputs.length > 0 ? inputs[0] : Object.values(namedInputs)[0];
+      console.log(`🔍 [${nodeId}] 第一入力値: ${firstInput}, type: ${typeof firstInput}`);
+      
+      // GraphAIから渡される値を適切に処理（ノード名解決機能付き）
+      if (typeof firstInput === 'string') {
+        // ファイルパスの場合はそのまま使用
+        if (firstInput.includes('./images/') || firstInput.includes('./output/')) {
+          inputValue = firstInput;
+          console.log(`🔍 [${nodeId}] ファイルパス直接使用: ${inputValue}`);
+        } else {
+          // ノード名の場合は値を解決
+          inputValue = resolveNodeValue(firstInput, graphDataCache);
+          console.log(`🔍 [${nodeId}] ノード名解決結果: ${firstInput} -> ${inputValue}`);
+        }
+      } else if (typeof firstInput === 'object' && firstInput !== null) {
+        // オブジェクトの場合、outputPathを取得
+        inputValue = firstInput.outputPath || firstInput.value || firstInput;
+        if (typeof inputValue !== 'string') {
+          throw new Error(`オブジェクトから有効なパスを取得できません: ${JSON.stringify(firstInput)}`);
+        }
+        console.log(`🔍 [${nodeId}] オブジェクト解決結果: ${inputValue}`);
+      } else {
+        throw new Error(`不正な入力値: ${firstInput} (type: ${typeof firstInput})`);
+      }
     }
     
-    return result;
+    console.log(`🔍 [${nodeId}] 処理対象: ${params.operation}, 最終入力値: ${inputValue}`);
+    
+    // 処理実行
+    switch (params.operation) {
+      case 'mosaic':
+        result = await safeMosaic(inputValue, params, nodeId);
+        break;
+        
+      case 'rotate':
+        result = await safeRotate(inputValue, params, nodeId);
+        break;
+        
+      case 'resize':
+        result = await safeResize(inputValue, params, nodeId);
+        break;
+        
+      case 'summary':
+        result = await safeSummary(inputValue, params, nodeId);
+        break;
+        
+      default:
+        throw new Error(`未対応の操作: ${params.operation}`);
+    }
+    
+    const endTime = Date.now();
+    const processingTime = endTime - startTime;
+    
+    console.log(`✅ [${nodeId}] 処理完了: ${params.operation} (${processingTime}ms) - ${new Date().toLocaleTimeString('ja-JP', {timeZone: 'Asia/Tokyo'})}`);
+    console.log(`📤 [${nodeId}] 出力: ${typeof result === 'object' ? JSON.stringify(result) : result}`);
+    
+    // GraphAI互換の戻り値
+    return {
+      outputPath: params.outputPath || result,
+      operation: params.operation,
+      processingTime,
+      timestamp: new Date().toISOString(),
+      nodeId: nodeId,
+      value: params.outputPath || result
+    };
+    
   } catch (error) {
-    const duration = Date.now() - startTime;
-    if (nodeId) {
-      progressTracker.logEvent(nodeId, 'error', duration);
-    }
+    console.error(`❌ [${nodeId}] 処理エラー: ${params.operation}`, error.message);
     throw error;
   }
 };
 
-async function runLinuxParallelDemo() {
-  console.log('🐳 GraphAI Linux/Docker 並列処理ショーケース');
-  console.log('💡 コンテナ環境でのGraphAI真の並列性能を体験');
+// ===== 安全な画像処理関数群 =====
+
+// 安全なモザイク処理
+async function safeMosaic(inputPath, params, nodeId) {
+  const { blockSize = 10, outputPath } = params;
+  
+  console.log(`🎨 [${nodeId}] モザイク処理開始: ${inputPath} -> ${outputPath}`);
+  
+  // 出力ディレクトリ作成
+  await ensureDirSafe(path.dirname(outputPath));
+  
+  // 入力ファイル存在確認
+  try {
+    await fs.access(inputPath);
+    const stats = await fs.stat(inputPath);
+    console.log(`📁 [${nodeId}] 入力ファイル確認: ${inputPath} (${Math.round(stats.size/1024)}KB)`);
+  } catch (error) {
+    throw new Error(`入力ファイルが見つかりません: ${inputPath}`);
+  }
+  
+  try {
+    const image = sharp(inputPath);
+    const metadata = await image.metadata();
+    
+    console.log(`🔧 [${nodeId}] 画像メタデータ: ${metadata.width}x${metadata.height}, フォーマット: ${metadata.format}`);
+    
+    const smallWidth = Math.max(1, Math.floor(metadata.width / blockSize));
+    const smallHeight = Math.max(1, Math.floor(metadata.height / blockSize));
+    
+    console.log(`🔧 [${nodeId}] モザイクサイズ: ${smallWidth}x${smallHeight} (ブロックサイズ: ${blockSize})`);
+    
+    await image
+      .resize(smallWidth, smallHeight, { kernel: 'nearest' })
+      .resize(metadata.width, metadata.height, { kernel: 'nearest' })
+      .jpeg({ quality: 90 })
+      .toFile(outputPath);
+    
+    // ファイル書き込み完了の確認
+    await fs.access(outputPath);
+    const outputStats = await fs.stat(outputPath);
+    console.log(`💾 [${nodeId}] モザイク処理完了: ${outputPath} (${Math.round(outputStats.size/1024)}KB)`);
+    
+    return outputPath;
+  } catch (error) {
+    console.error(`❌ [${nodeId}] モザイク処理エラー: ${error.message}`);
+    throw error;
+  }
+}
+
+// 安全な回転処理
+async function safeRotate(inputPath, params, nodeId) {
+  const { angle = 90, outputPath } = params;
+  
+  console.log(`🔄 [${nodeId}] 回転処理開始: ${inputPath} -> ${outputPath} (${angle}度)`);
+  
+  await ensureDirSafe(path.dirname(outputPath));
+  
+  // 入力ファイル存在確認（依存関係対応）
+  await waitForFileSafe(inputPath, nodeId);
+  
+  try {
+    const stats = await fs.stat(inputPath);
+    console.log(`📁 [${nodeId}] 入力ファイル確認: ${inputPath} (${Math.round(stats.size/1024)}KB)`);
+    
+    await sharp(inputPath)
+      .rotate(angle)
+      .jpeg({ quality: 90 })
+      .toFile(outputPath);
+    
+    // ファイル書き込み完了の確認
+    await fs.access(outputPath);
+    const outputStats = await fs.stat(outputPath);
+    console.log(`💾 [${nodeId}] 回転処理完了: ${outputPath} (${Math.round(outputStats.size/1024)}KB)`);
+    
+    return outputPath;
+  } catch (error) {
+    console.error(`❌ [${nodeId}] 回転処理エラー: ${error.message}`);
+    throw error;
+  }
+}
+
+// 安全なリサイズ処理
+async function safeResize(inputPath, params, nodeId) {
+  const { width = 300, height = 300, outputPath } = params;
+  
+  console.log(`📏 [${nodeId}] リサイズ処理開始: ${inputPath} -> ${outputPath} (${width}x${height})`);
+  
+  await ensureDirSafe(path.dirname(outputPath));
+  
+  // 入力ファイル存在確認（依存関係対応）
+  await waitForFileSafe(inputPath, nodeId);
+  
+  try {
+    const stats = await fs.stat(inputPath);
+    console.log(`📁 [${nodeId}] 入力ファイル確認: ${inputPath} (${Math.round(stats.size/1024)}KB)`);
+    
+    await sharp(inputPath)
+      .resize(width, height, { 
+        fit: 'cover',
+        position: 'center'
+      })
+      .jpeg({ quality: 90 })
+      .toFile(outputPath);
+    
+    // ファイル書き込み完了の確認
+    await fs.access(outputPath);
+    const outputStats = await fs.stat(outputPath);
+    console.log(`💾 [${nodeId}] リサイズ処理完了: ${outputPath} (${Math.round(outputStats.size/1024)}KB)`);
+    
+    return outputPath;
+  } catch (error) {
+    console.error(`❌ [${nodeId}] リサイズ処理エラー: ${error.message}`);
+    throw error;
+  }
+}
+
+// 安全なファイル待機関数
+async function waitForFileSafe(filePath, nodeId, maxWaitMs = 5000) {
+  const startTime = Date.now();
+  
+  console.log(`⏳ [${nodeId}] ファイル待機開始: ${filePath}`);
+  
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      await fs.access(filePath);
+      // ファイル存在確認後、少し待機（書き込み完了確保）
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // ファイルサイズが0でないことを確認
+      const stats = await fs.stat(filePath);
+      if (stats.size > 0) {
+        console.log(`✅ [${nodeId}] ファイル準備完了: ${filePath} (${Math.round(stats.size/1024)}KB)`);
+        return true;
+      }
+    } catch (error) {
+      // ファイルがまだ存在しない場合は少し待機
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+  
+  throw new Error(`[${nodeId}] 依存ファイルの待機タイムアウト: ${filePath}`);
+}
+
+// 安全なサマリー作成
+async function safeSummary(inputs, params, nodeId) {
+  const { outputPath } = params;
+  
+  console.log(`📊 [${nodeId}] サマリー作成開始: ${inputs.length}個の結果`);
+  
+  await ensureDirSafe(path.dirname(outputPath));
+  
+  const summary = {
+    totalProcessed: inputs.length,
+    completedAt: new Date().toLocaleString('ja-JP', {timeZone: 'Asia/Tokyo'}),
+    processingNode: nodeId,
+    results: inputs.map((input, index) => {
+      const result = {
+        pipeline: index + 1,
+        processingTime: 'N/A'
+      };
+      
+      if (typeof input === 'object' && input !== null) {
+        result.outputPath = input.outputPath || input.value;
+        result.processingTime = input.processingTime || 'N/A';
+        result.operation = input.operation;
+      } else {
+        result.outputPath = input;
+      }
+      
+      return result;
+    })
+  };
+  
+  await fs.writeFile(outputPath, JSON.stringify(summary, null, 2));
+  
+  console.log(`💾 [${nodeId}] サマリー作成完了: ${outputPath}`);
+  
+  return summary;
+}
+
+// 安全なディレクトリ作成
+async function ensureDirSafe(dirPath) {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (error) {
+    if (error.code !== 'EEXIST') {
+      console.warn(`⚠️  ディレクトリ作成警告: ${error.message}`);
+      if (error.code === 'EPERM' || error.code === 'EACCES') {
+        console.log(`📁 既存ディレクトリを使用: ${dirPath}`);
+        return;
+      }
+      throw error;
+    }
+  }
+}
+
+// ===== メイン処理 =====
+async function runCompleteDemo() {
+  console.log('🐳 GraphAI 完全統合版並列処理デモ（ノード名解決機能付き）');
+  console.log('💡 すべての機能を単一ファイルに統合');
   console.log('🌍 実行環境: Linux Container (Docker)');
   console.log('🕒 タイムゾーン: Asia/Tokyo (JST)');
   console.log('');
   
   try {
     // 環境準備
-    await setupLinuxEnvironment();
-    
-    // 比較説明
-    displayLinuxComparisonInfo();
+    await setupEnvironment();
     
     // GraphAI設定読み込み
     const yamlContent = await fs.readFile('./graph.yaml', 'utf8');
     const graphData = yaml.load(yamlContent);
     
-    // エージェント登録（Linux最適化版）
+    // GraphAIデータをキャッシュ（ノード名解決用）
+    graphDataCache = graphData;
+    
+    console.log('🔧 GraphAI設定確認:');
+    console.log(`   version: ${graphData.version}`);
+    console.log(`   ノード数: ${Object.keys(graphData.nodes).length}`);
+    
+    // エージェント登録（完全統合版・ノード名解決機能付き）
     const agents = {
       imageProcessingAgent: {
-        agent: linuxOptimizedAgent,
-        mock: linuxOptimizedAgent
+        agent: completeImageProcessingAgent,
+        mock: completeImageProcessingAgent
       }
     };
     
-    // 並列処理開始
-    progressTracker.start();
+    console.log('🔧 完全統合版エージェント登録:');
+    console.log('   - imageProcessingAgent: 完全統合版（ノード名解決機能付き）');
+    console.log('   - ログ機能: 確実に有効');
+    console.log('   - ファイル待機機能: 有効');
+    console.log('   - ノード名解決機能: 有効');
+    
+    // GraphAI実行
+    console.log('\n' + '='.repeat(70));
+    console.log('🚀 GraphAI 並列処理実行開始！（完全統合版）');
+    console.log('='.repeat(70));
+    
     const startTime = Date.now();
     
     const graph = new GraphAI(graphData, agents);
@@ -257,15 +515,20 @@ async function runLinuxParallelDemo() {
     const totalTime = Date.now() - startTime;
     
     // 結果表示
-    progressTracker.displayFinalResults(totalTime);
+    console.log('\n' + '🎉'.repeat(25));
+    console.log('🏆 GraphAI 並列処理完了！（完全統合版）');
+    console.log('🎉'.repeat(25));
+    console.log('');
+    
+    console.log('📈 パフォーマンス結果:');
+    console.log(`   ⚡ 総処理時間: ${totalTime}ms`);
+    console.log('');
     
     // ファイル結果確認
     await displayOutputFiles();
     
-    // Webサーバー情報
-    console.log('\n🌐 Webで結果を確認:');
-    console.log('   docker-compose up web-server');
-    console.log('   http://localhost:3001');
+    console.log(`\n📝 詳細ログ: ${logFilePath}`);
+    console.log(`🕒 実行完了時刻: ${formatJSTTime().local}`);
     
   } catch (error) {
     console.error('❌ エラー:', error.message);
@@ -273,8 +536,8 @@ async function runLinuxParallelDemo() {
   }
 }
 
-async function setupLinuxEnvironment() {
-  console.log('🔧 Linux/Docker環境をセットアップ中...');
+async function setupEnvironment() {
+  console.log('🔧 環境をセットアップ中...');
   
   // ディレクトリ作成
   const dirs = ['./output'];
@@ -301,31 +564,12 @@ async function setupLinuxEnvironment() {
     }
   }
   
-  console.log('✅ Linux/Docker環境セットアップ完了');
-  console.log('');
-}
-
-function displayLinuxComparisonInfo() {
-  console.log('📊 Linux vs Windows 並列処理比較:');
-  console.log('');
-  console.log('🪟 Windows環境の問題:');
-  console.log('   ❌ ファイルシステムロック競合');
-  console.log('   ❌ 並列書き込み制限');
-  console.log('   ❌ Sharp画像処理での競合');
-  console.log('');
-  console.log('🐧 Linux/Docker環境の利点:');
-  console.log('   ✅ 安定した並列ファイル操作');
-  console.log('   ✅ 最適化されたSharp性能');
-  console.log('   ✅ 真の並列処理を実現');
-  console.log('');
-  console.log('⚡ 予想結果:');
-  console.log('   🐌 順次処理: ~225ms');
-  console.log('   ⚡ GraphAI並列: ~80ms (2.8倍高速化)');
+  console.log('✅ 環境セットアップ完了');
   console.log('');
 }
 
 async function displayOutputFiles() {
-  console.log('\n📁 生成されたファイル:');
+  console.log('📁 生成されたファイル:');
   try {
     const outputFiles = await fs.readdir('./output');
     if (outputFiles.length > 0) {
@@ -342,7 +586,14 @@ async function displayOutputFiles() {
 
 // メイン実行
 if (require.main === module) {
-  runLinuxParallelDemo().catch(console.error);
+  console.log('📍 メイン関数実行中...');
+  runCompleteDemo().catch((error) => {
+    console.error(`❌ 最上位エラー: ${error.message}`);
+    console.error(`スタックトレース: ${error.stack}`);
+  });
 }
 
-module.exports = { runLinuxParallelDemo };
+console.log('📍 完全統合版スクリプト読み込み完了');
+console.log(`📝 ログファイル作成確認: ${logFilePath}`);
+
+module.exports = { runCompleteDemo };

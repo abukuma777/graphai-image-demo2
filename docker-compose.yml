@@ -1,4 +1,4 @@
-# docker-compose.yml - GraphAIデモ環境
+# docker-compose.yml - プロジェクト全体マウント版（最もシンプル）
 version: '3.8'
 
 services:
@@ -8,14 +8,12 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # ローカルの画像をコンテナにマウント
-      - ./images:/app/images:ro
-      # 出力結果をローカルに保存
-      - ./output:/app/output
-      # ログをローカルに保存
-      - ./logs:/app/logs
+      # 🚀 プロジェクト全体をマウント（開発モード）
+      - .:/app
+      # node_modulesは除外（コンテナ内のものを使用）
+      - /app/node_modules
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development  # 開発モードに変更
       - TZ=Asia/Tokyo
     command: node run-demo-showcase.js
     
@@ -26,8 +24,8 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - ./images:/app/images:ro
-      - ./output:/app/output:ro
+      - .:/app
+      - /app/node_modules
     environment:
       - TZ=Asia/Tokyo
     command: node start-web-server.js
