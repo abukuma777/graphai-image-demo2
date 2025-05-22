@@ -1,9 +1,9 @@
-// imageAgent-context.js - GraphAI画像処理エージェント（Context版）
+// imageAgent-context.js - GraphAI画像処理エージェント（修正版）
 const sharp = require('sharp');
 const fs = require('fs').promises;
 const path = require('path');
 
-// GraphAI エージェント関数（Context版）
+// GraphAI エージェント関数（Context版・修正版）
 const imageProcessingAgent = async (context) => {
   const startTime = Date.now();
   
@@ -13,10 +13,6 @@ const imageProcessingAgent = async (context) => {
   
   console.log(`🔍 Context呼び出し: namedInputs=`, namedInputs);
   console.log(`🔍 params=`, params);
-  console.log(`🔍 全コンテキスト=`, {
-    keys: Object.keys(context),
-    nodeId: context.debugInfo?.nodeId
-  });
   
   if (!params.operation) {
     throw new Error('params.operation が見つかりません。GraphAIの設定を確認してください。');
@@ -26,50 +22,30 @@ const imageProcessingAgent = async (context) => {
   
   try {
     let result;
-    
-    // Named Inputsから適切な入力データを取得
     let inputValue;
+    
     if (params.operation === 'summary') {
       // summary操作の場合は全ての入力を配列として取得
       inputValue = Object.values(namedInputs);
     } else {
-      // 他の操作の場合、まず source の値を取得
-      const sourceNodeName = namedInputs.source;
-      console.log(`🔍 sourceNodeName: ${sourceNodeName}`);
+      // source という名前の入力を取得
+      const sourceValue = namedInputs.source;
+      console.log(`🔍 sourceValue: ${sourceValue}, type: ${typeof sourceValue}`);
       
-      // sourceNodeName が文字列で、実際のファイルパスでない場合
-      if (typeof sourceNodeName === 'string' && !sourceNodeName.includes('/')) {
-        // これはノード名なので、実際のファイルパスに変換
-        console.log(`⚠️  ノード名を受信: ${sourceNodeName}, 実際の値を取得中...`);
-        
-        // ノード名からファイルパスへのマッピング
-        const nodeNameMapping = {
-          // 初期入力ノード
-          'image1': './images/image1.png',
-          'image2': './images/image2.png', 
-          'image3': './images/image3.png',
-          
-          // 処理済みノード（出力ファイルパスを推測）
-          'mosaic1': './output/image1_mosaic.jpg',
-          'mosaic2': './output/image2_mosaic.jpg',
-          'mosaic3': './output/image3_mosaic.jpg',
-          'rotate1': './output/image1_rotated.jpg',
-          'rotate2': './output/image2_rotated.jpg',
-          'rotate3': './output/image3_rotated.jpg',
-          'resize1': './output/image1_final.jpg',
-          'resize2': './output/image2_final.jpg',
-          'resize3': './output/image3_final.jpg'
-        };
-        
-        if (nodeNameMapping[sourceNodeName]) {
-          inputValue = nodeNameMapping[sourceNodeName];
-          console.log(`🔄 ノード名をファイルパスに変換: ${sourceNodeName} → ${inputValue}`);
+      // GraphAIから渡される値を適切に処理
+      if (typeof sourceValue === 'string') {
+        // ファイルパスの場合はそのまま使用
+        if (sourceValue.includes('./images/') || sourceValue.includes('./output/')) {
+          inputValue = sourceValue;
         } else {
-          inputValue = sourceNodeName;
-          console.log(`⚠️  ノード名の変換ができません: ${sourceNodeName}`);
+          // ノード名の場合はファイルパスに変換
+          inputValue = await resolveNodeNameToPath(sourceValue, params.operation);
         }
+      } else if (typeof sourceValue === 'object' && sourceValue !== null) {
+        // オブジェクトの場合、outputPathを取得
+        inputValue = sourceValue.outputPath || sourceValue;
       } else {
-        inputValue = sourceNodeName;
+        throw new Error(`不正な入力値: ${sourceValue}`);
       }
     }
     
@@ -103,13 +79,58 @@ const imageProcessingAgent = async (context) => {
     console.log(`📤 出力: ${result}`);
     
     // 次のノードが使えるシンプルな値を返す
-    return result;
+    return {
+      outputPath: params.outputPath || result,
+      operation: params.operation,
+      processingTime,
+      timestamp: new Date().toISOString()
+    };
     
   } catch (error) {
     console.error(`❌ 処理エラー: ${params.operation}`, error);
-    throw error; // エラーを再スロー
+    throw error;
   }
 };
+
+// ノード名をファイルパスに解決する関数
+async function resolveNodeNameToPath(nodeName, operation) {
+  // 基本の入力画像ノード
+  const baseImages = {
+    'image1': './images/image1.jpg',
+    'image2': './images/image2.jpg',
+    'image3': './images/image3.jpg'
+  };
+  
+  if (baseImages[nodeName]) {
+    return baseImages[nodeName];
+  }
+  
+  // 処理済みノードの出力パスを推測
+  const processedNodes = {
+    'mosaic1': './output/image1_mosaic.jpg',
+    'mosaic2': './output/image2_mosaic.jpg',
+    'mosaic3': './output/image3_mosaic.jpg',
+    'rotate1': './output/image1_rotated.jpg',
+    'rotate2': './output/image2_rotated.jpg',
+    'rotate3': './output/image3_rotated.jpg',
+    'resize1': './output/image1_final.jpg',
+    'resize2': './output/image2_final.jpg',
+    'resize3': './output/image3_final.jpg'
+  };
+  
+  if (processedNodes[nodeName]) {
+    // ファイルが存在するかチェック
+    try {
+      await fs.access(processedNodes[nodeName]);
+      return processedNodes[nodeName];
+    } catch (error) {
+      console.warn(`⚠️  ファイルが見つかりません: ${processedNodes[nodeName]}`);
+      throw new Error(`依存ファイルが見つかりません: ${processedNodes[nodeName]}`);
+    }
+  }
+  
+  throw new Error(`未知のノード名: ${nodeName}`);
+}
 
 // モザイク処理
 async function applyMosaic(inputPath, params) {
@@ -118,13 +139,20 @@ async function applyMosaic(inputPath, params) {
   // 出力ディレクトリ作成
   await ensureDir(path.dirname(outputPath));
   
+  // 入力ファイル存在確認
+  try {
+    await fs.access(inputPath);
+  } catch (error) {
+    throw new Error(`入力ファイルが見つかりません: ${inputPath}`);
+  }
+  
   // Sharp を使ってモザイク効果を適用
   const image = sharp(inputPath);
   const metadata = await image.metadata();
   
   // 画像を小さくしてから元のサイズに戻すことでモザイク効果
-  const smallWidth = Math.floor(metadata.width / blockSize);
-  const smallHeight = Math.floor(metadata.height / blockSize);
+  const smallWidth = Math.max(1, Math.floor(metadata.width / blockSize));
+  const smallHeight = Math.max(1, Math.floor(metadata.height / blockSize));
   
   await image
     .resize(smallWidth, smallHeight, { kernel: 'nearest' })
@@ -141,6 +169,13 @@ async function rotateImage(inputPath, params) {
   
   await ensureDir(path.dirname(outputPath));
   
+  // 入力ファイル存在確認
+  try {
+    await fs.access(inputPath);
+  } catch (error) {
+    throw new Error(`入力ファイルが見つかりません: ${inputPath}`);
+  }
+  
   await sharp(inputPath)
     .rotate(angle)
     .jpeg({ quality: 90 })
@@ -154,6 +189,13 @@ async function resizeImage(inputPath, params) {
   const { width = 300, height = 300, outputPath } = params;
   
   await ensureDir(path.dirname(outputPath));
+  
+  // 入力ファイル存在確認
+  try {
+    await fs.access(inputPath);
+  } catch (error) {
+    throw new Error(`入力ファイルが見つかりません: ${inputPath}`);
+  }
   
   await sharp(inputPath)
     .resize(width, height, { 
@@ -177,7 +219,8 @@ async function createSummary(inputs, params) {
     completedAt: new Date().toISOString(),
     results: inputs.map((input, index) => ({
       pipeline: index + 1,
-      outputPath: input // 各パイプラインの最終出力パス
+      outputPath: typeof input === 'object' ? input.outputPath : input,
+      processingTime: typeof input === 'object' ? input.processingTime : 'N/A'
     }))
   };
   
@@ -186,12 +229,20 @@ async function createSummary(inputs, params) {
   return summary;
 }
 
-// ディレクトリ作成
+// ディレクトリ作成（権限エラー対応）
 async function ensureDir(dirPath) {
   try {
     await fs.mkdir(dirPath, { recursive: true });
   } catch (error) {
-    if (error.code !== 'EEXIST') throw error;
+    if (error.code !== 'EEXIST') {
+      console.warn(`⚠️  ディレクトリ作成警告: ${error.message}`);
+      // Windows権限問題の場合は警告のみで続行
+      if (error.code === 'EPERM' || error.code === 'EACCES') {
+        console.log(`📁 既存ディレクトリを使用: ${dirPath}`);
+        return;
+      }
+      throw error;
+    }
   }
 }
 

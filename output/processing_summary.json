@@ -1,18 +1,21 @@
 {
   "totalProcessed": 3,
-  "completedAt": "2025-05-22T02:07:15.805Z",
+  "completedAt": "2025-05-22T02:27:46.311Z",
   "results": [
     {
       "pipeline": 1,
-      "outputPath": "resize1"
+      "outputPath": "resize1",
+      "processingTime": "N/A"
     },
     {
       "pipeline": 2,
-      "outputPath": "resize2"
+      "outputPath": "resize2",
+      "processingTime": "N/A"
     },
     {
       "pipeline": 3,
-      "outputPath": "resize3"
+      "outputPath": "resize3",
+      "processingTime": "N/A"
     }
   ]
 }
