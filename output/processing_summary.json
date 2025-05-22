@@ -1,0 +1,18 @@
+{
+  "totalProcessed": 3,
+  "completedAt": "2025-05-22T02:07:15.805Z",
+  "results": [
+    {
+      "pipeline": 1,
+      "outputPath": "resize1"
+    },
+    {
+      "pipeline": 2,
+      "outputPath": "resize2"
+    },
+    {
+      "pipeline": 3,
+      "outputPath": "resize3"
+    }
+  ]
+}

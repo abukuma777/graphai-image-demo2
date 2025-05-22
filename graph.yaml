@@ -1,0 +1,112 @@
+# GraphAI 画像処理パイプライン設定
+version: 0.5.0
+
+# データフローグラフ定義
+nodes:
+  # === 入力画像ノード ===
+  image1:
+    value: "./images/image1.png"
+    
+  image2:
+    value: "./images/image2.png"
+    
+  image3:
+    value: "./images/image3.png"
+
+  # === パイプライン1: image1の処理 ===
+  mosaic1:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 10
+      outputPath: "./output/image1_mosaic.jpg"
+    inputs:
+      source: "image1"
+    
+  rotate1:
+    agent: "imageProcessingAgent" 
+    params:
+      operation: "rotate"
+      angle: 90
+      outputPath: "./output/image1_rotated.jpg"
+    inputs:
+      source: "mosaic1"
+    
+  resize1:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 300
+      height: 300
+      outputPath: "./output/image1_final.jpg"
+    inputs:
+      source: "rotate1"
+
+  # === パイプライン2: image2の処理（並列実行） ===
+  mosaic2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 15
+      outputPath: "./output/image2_mosaic.jpg"
+    inputs:
+      source: "image2"
+    
+  rotate2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "rotate" 
+      angle: 180
+      outputPath: "./output/image2_rotated.jpg"
+    inputs:
+      source: "mosaic2"
+    
+  resize2:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 300
+      height: 300
+      outputPath: "./output/image2_final.jpg"
+    inputs:
+      source: "rotate2"
+
+  # === パイプライン3: image3の処理（並列実行） ===
+  mosaic3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "mosaic"
+      blockSize: 8
+      outputPath: "./output/image3_mosaic.jpg"
+    inputs:
+      source: "image3"
+    
+  rotate3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "rotate"
+      angle: 270
+      outputPath: "./output/image3_rotated.jpg"
+    inputs:
+      source: "mosaic3"
+    
+  resize3:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "resize"
+      width: 300
+      height: 300
+      outputPath: "./output/image3_final.jpg"
+    inputs:
+      source: "rotate3"
+
+  # === 最終結果マージ ===
+  summary:
+    agent: "imageProcessingAgent"
+    params:
+      operation: "summary"
+      outputPath: "./output/processing_summary.json"
+    inputs:
+      result1: "resize1"
+      result2: "resize2"
+      result3: "resize3"
